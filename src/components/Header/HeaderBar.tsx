@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Menu, X, User } from "lucide-react";
+import LoginModal from "../Modal/LoginModal";
 
 function FacebookIcon({ size = 18 }: { size?: number }) {
     return (
@@ -112,128 +113,135 @@ export default function HeaderBar({ user }: HeaderBarProps) {
     ];
 
     const mobileLinks = user ? loggedInLinks : loggedOutLinks;
-
+    const [isLoginOpen, setIsLoginOpen] = useState(false);
     return (
-        <header className="relative w-full bg-[#222D43]">
-            {/* ===== DESKTOP (giữ nguyên layout gốc, chỉ ẩn dưới md) ===== */}
-            <div className="hidden md:flex h-[102px] w-full items-center justify-center">
-                {user ? (
-                    <div className="flex items-center justify-center">
-                        <div>
-                            <NavItem href="/dashboard">DASHBOARD</NavItem>
-                            <NavItem href="/status">STATUS OVERVIEW</NavItem>
-                        </div>
-                        <div className="mx-[60px] my-[21px]">
-                            <img src="/AHALogo/LogoPink.svg" alt="Logo" className="h-[60px] w-auto" />
-                        </div>
+        <>
+            <header className="relative w-full bg-[#222D43]">
+                <div className="hidden md:flex h-[102px] w-full items-center justify-center">
+                    {user ? (
                         <div className="flex items-center justify-center">
-                            <NavItem href="/submission">YOUR SUBMISSION</NavItem>
-                            <NavItem href="/account">ACCOUNT</NavItem>
-                            <NavItem href="/profile">Hello, {user.name}</NavItem>
+                            <div>
+                                <NavItem href="/dashboard">DASHBOARD</NavItem>
+                                <NavItem href="/status">STATUS OVERVIEW</NavItem>
+                            </div>
+                            <div className="mx-[60px] my-[21px]">
+                                <img src="/AHALogo/LogoPink.svg" alt="Logo" className="h-[60px] w-auto" />
+                            </div>
+                            <div className="flex items-center justify-center">
+                                <NavItem href="/submission">YOUR SUBMISSION</NavItem>
+                                <NavItem href="/account">ACCOUNT</NavItem>
+                                <NavItem href="/profile">Hello, {user.name}</NavItem>
+                            </div>
                         </div>
-                    </div>
-                ) : (
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <NavItem href="/award">THE AWARD</NavItem>
-                            <NavItem href="/media-center">MEDIA CENTER</NavItem>
-                            <NavItem href="/categories">CATEGORIES</NavItem>
-                            <NavItem href="/registration">REGISTRATION</NavItem>
+                    ) : (
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <NavItem href="/award">THE AWARD</NavItem>
+                                <NavItem href="/media-center">MEDIA CENTER</NavItem>
+                                <NavItem href="/categories">CATEGORIES</NavItem>
+                                <NavItem href="/registration">REGISTRATION</NavItem>
+                            </div>
+                            <div className="mx-[60px] my-[21px]">
+                                <img src="/AHALogo/LogoPink.svg" alt="Logo" className="h-[60px] w-auto" />
+                            </div>
+                            <div className="flex items-center justify-center">
+                                <NavItem href="/get-involved">GET INVOLVED</NavItem>
+                                <NavItem href="/winners">WINNERS</NavItem>
+                                <NavItem href="/latest-update">LATEST UPDATE</NavItem>
+                                <button
+                                    onClick={() => setIsLoginOpen(true)}
+                                    className="text-[#C48F7F] hover:bg-[#C48F7F]/20 px-6 py-3 block uppercase"
+                                >
+                                    Login
+                                </button>
+                            </div>
                         </div>
-                        <div className="mx-[60px] my-[21px]">
-                            <img src="/AHALogo/LogoPink.svg" alt="Logo" className="h-[60px] w-auto" />
+                    )}
+                </div>
+
+                {/* ===== MOBILE TOP BAR: hamburger - logo - user icon ===== */}
+                <div className="flex md:hidden h-[72px] w-full items-center justify-between px-5">
+                    <button
+                        aria-label="Open menu"
+                        onClick={() => setMenuOpen(true)}
+                        className="text-[#C48F7F]"
+                    >
+                        <Menu size={28} strokeWidth={2.2} />
+                    </button>
+
+                    <img src="/AHALogo/LogoPink.svg" alt="Logo" className="h-[38px] w-auto" />
+
+                    <Link
+                        href={user ? "/profile" : "/login"}
+                        aria-label="Account"
+                        className="flex h-9 w-9 items-center justify-center rounded-full bg-[#C48F7F] text-[#1C2A42]"
+                    >
+                        <User size={18} />
+                    </Link>
+                </div>
+
+                {/* ===== MOBILE FULL-SCREEN MENU ===== */}
+                {menuOpen && (
+                    <div className="fixed inset-0 z-50 flex flex-col bg-[#222D43] md:hidden">
+                        {/* header của menu: logo trắng + nút đóng */}
+                        <div className="flex items-center justify-between px-5 h-[72px] shrink-0">
+                            <img
+                                src="/AHALogo/LogoWhite.svg"
+                                alt="Logo"
+                                className="h-[46px] w-auto"
+                            />
+                            <button aria-label="Close menu" onClick={closeMenu} className="text-white">
+                                <X size={28} strokeWidth={2.2} />
+                            </button>
                         </div>
-                        <div className="flex items-center justify-center">
-                            <NavItem href="/get-involved">GET INVOLVED</NavItem>
-                            <NavItem href="/winners">WINNERS</NavItem>
-                            <NavItem href="/latest-update">LATEST UPDATE</NavItem>
-                            <NavItem href="/login">LOG IN</NavItem>
+
+                        {/* danh sách link, cuộn được nếu màn hình thấp */}
+                        <nav className="flex flex-col overflow-y-auto">
+                            {mobileLinks.map((link) => (
+                                <MobileNavItem key={link.href} href={link.href} onClick={closeMenu}>
+                                    {link.label}
+                                </MobileNavItem>
+                            ))}
+                        </nav>
+
+                        {/* follow us, đẩy xuống đáy màn hình */}
+                        <div className="mt-auto flex flex-col items-center gap-4 py-10">
+                            <p className="text-[13px] tracking-widest text-[#C48F7F]">FOLLOW US</p>
+                            <div className="flex items-center gap-4">
+                                <a
+                                    href="#"
+                                    aria-label="Facebook"
+                                    className="flex h-10 w-10 items-center justify-center rounded-full bg-[#C48F7F] text-[#1C2A42]"
+                                >
+                                    <FacebookIcon size={18} />
+                                </a>
+                                <a
+                                    href="#"
+                                    aria-label="Instagram"
+                                    className="flex h-10 w-10 items-center justify-center rounded-full bg-[#C48F7F] text-[#1C2A42]"
+                                >
+                                    <InstagramIcon size={18} />
+                                </a>
+                                <a
+                                    href="#"
+                                    aria-label="LinkedIn"
+                                    className="flex h-10 w-10 items-center justify-center rounded-full bg-[#C48F7F] text-[#1C2A42]"
+                                >
+                                    <LinkedinIcon size={18} />
+                                </a>
+                                <a
+                                    href="#"
+                                    aria-label="YouTube"
+                                    className="flex h-10 w-10 items-center justify-center rounded-full bg-[#C48F7F] text-[#1C2A42]"
+                                >
+                                    <YoutubeIcon size={18} />
+                                </a>
+                            </div>
                         </div>
                     </div>
                 )}
-            </div>
-
-            {/* ===== MOBILE TOP BAR: hamburger - logo - user icon ===== */}
-            <div className="flex md:hidden h-[72px] w-full items-center justify-between px-5">
-                <button
-                    aria-label="Open menu"
-                    onClick={() => setMenuOpen(true)}
-                    className="text-[#C48F7F]"
-                >
-                    <Menu size={28} strokeWidth={2.2} />
-                </button>
-
-                <img src="/AHALogo/LogoPink.svg" alt="Logo" className="h-[38px] w-auto" />
-
-                <Link
-                    href={user ? "/profile" : "/login"}
-                    aria-label="Account"
-                    className="flex h-9 w-9 items-center justify-center rounded-full bg-[#C48F7F] text-[#1C2A42]"
-                >
-                    <User size={18} />
-                </Link>
-            </div>
-
-            {/* ===== MOBILE FULL-SCREEN MENU ===== */}
-            {menuOpen && (
-                <div className="fixed inset-0 z-50 flex flex-col bg-[#222D43] md:hidden">
-                    {/* header của menu: logo trắng + nút đóng */}
-                    <div className="flex items-center justify-between px-5 h-[72px] shrink-0">
-                        <img
-                            src="/AHALogo/LogoWhite.svg"
-                            alt="Logo"
-                            className="h-[46px] w-auto"
-                        />
-                        <button aria-label="Close menu" onClick={closeMenu} className="text-white">
-                            <X size={28} strokeWidth={2.2} />
-                        </button>
-                    </div>
-
-                    {/* danh sách link, cuộn được nếu màn hình thấp */}
-                    <nav className="flex flex-col overflow-y-auto">
-                        {mobileLinks.map((link) => (
-                            <MobileNavItem key={link.href} href={link.href} onClick={closeMenu}>
-                                {link.label}
-                            </MobileNavItem>
-                        ))}
-                    </nav>
-
-                    {/* follow us, đẩy xuống đáy màn hình */}
-                    <div className="mt-auto flex flex-col items-center gap-4 py-10">
-                        <p className="text-[13px] tracking-widest text-[#C48F7F]">FOLLOW US</p>
-                        <div className="flex items-center gap-4">
-                            <a
-                                href="#"
-                                aria-label="Facebook"
-                                className="flex h-10 w-10 items-center justify-center rounded-full bg-[#C48F7F] text-[#1C2A42]"
-                            >
-                                <FacebookIcon size={18} />
-                            </a>
-                            <a
-                                href="#"
-                                aria-label="Instagram"
-                                className="flex h-10 w-10 items-center justify-center rounded-full bg-[#C48F7F] text-[#1C2A42]"
-                            >
-                                <InstagramIcon size={18} />
-                            </a>
-                            <a
-                                href="#"
-                                aria-label="LinkedIn"
-                                className="flex h-10 w-10 items-center justify-center rounded-full bg-[#C48F7F] text-[#1C2A42]"
-                            >
-                                <LinkedinIcon size={18} />
-                            </a>
-                            <a
-                                href="#"
-                                aria-label="YouTube"
-                                className="flex h-10 w-10 items-center justify-center rounded-full bg-[#C48F7F] text-[#1C2A42]"
-                            >
-                                <YoutubeIcon size={18} />
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            )}
-        </header>
+            </header>
+            <LoginModal isOpen={isLoginOpen} onClose={() => setIsLoginOpen(false)} />
+        </>
     );
 }
